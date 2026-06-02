@@ -6,11 +6,14 @@ Cloudflare Worker 全栈邮件后台：Worker 负责鉴权、D1 邮件接口和 
 
 ```txt
 src/client/main.jsx             React 入口
-src/client/App.jsx              前端应用编排
-src/client/api/                 前端 API client
-src/client/components/          登录、侧栏、工具栏和邮件视图组件
-src/client/hooks/               前端状态持久化 hooks
-src/client/utils/               前端格式化工具
+src/client/app/                 前端应用编排
+src/client/layout/              前端布局组件
+src/client/features/            登录、账户和邮件功能视图
+src/client/shared/api/          前端 API client
+src/client/shared/hooks/        前端状态持久化 hooks
+src/client/shared/lib/          前端通用工具库
+src/client/shared/ui/           前端通用 UI 组件
+src/client/shared/utils/        前端格式化工具
 src/worker/index.js             Worker fetch/email 入口
 src/worker/app.js               HTTP 路由和统一错误处理
 src/worker/config.js            Worker 常量配置
