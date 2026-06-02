@@ -4,7 +4,7 @@ import { Button } from "../shared/ui/Button.jsx";
 
 export function Sidebar({ user, onLogout, onOpenSettings }) {
   return (
-    <aside className="flex min-h-screen flex-col gap-5 border-r border-slate-200/70 bg-white px-5 py-6 text-slate-900 shadow-[8px_0_32px_rgba(15,23,42,0.04)] max-[860px]:min-h-0 max-[860px]:flex-row max-[860px]:items-center max-[860px]:px-4 max-[860px]:py-3.5 max-[520px]:gap-2.5">
+    <aside className="flex h-screen flex-col gap-5 border-r border-slate-200/70 bg-white px-5 py-6 text-slate-900 shadow-[8px_0_32px_rgba(15,23,42,0.04)] max-[860px]:h-auto max-[860px]:min-h-0 max-[860px]:flex-row max-[860px]:items-center max-[860px]:px-4 max-[860px]:py-3.5 max-[520px]:gap-2.5">
       <div className="flex items-center gap-2.5 font-bold">
         <BrandMark />
         <span className="max-[520px]:hidden">

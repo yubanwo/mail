@@ -124,10 +124,10 @@ export function App() {
   }
 
   return (
-    <main className="grid min-h-screen grid-cols-[260px_minmax(0,1fr)] bg-[#f4f7f9] bg-[linear-gradient(to_right,rgba(226,232,240,0.42)_1px,transparent_1px),linear-gradient(to_bottom,rgba(226,232,240,0.34)_1px,transparent_1px)] bg-[size:32px_32px] max-[860px]:grid-cols-1">
+    <main className="grid h-screen grid-cols-[260px_minmax(0,1fr)] overflow-hidden bg-[#f4f7f9] bg-[linear-gradient(to_right,rgba(226,232,240,0.42)_1px,transparent_1px),linear-gradient(to_bottom,rgba(226,232,240,0.34)_1px,transparent_1px)] bg-[size:32px_32px] max-[860px]:grid-cols-1 max-[860px]:grid-rows-[auto_minmax(0,1fr)]">
       <Sidebar user={user} onLogout={logout} onOpenSettings={() => setSettingsOpen(true)} />
 
-      <section className="flex min-w-0 flex-col p-7 max-[520px]:p-3.5">
+      <section className="flex min-h-0 min-w-0 flex-col overflow-hidden p-7 max-[520px]:p-3.5">
         <MailToolbar
           emailCount={emails.length}
           filterTo={filterTo}
@@ -136,7 +136,7 @@ export function App() {
           onRefresh={loadEmails}
         />
 
-        <div className="grid min-h-0 flex-1 grid-cols-[minmax(280px,390px)_minmax(0,1fr)] gap-4 max-[860px]:grid-cols-1 max-[520px]:gap-3">
+        <div className="grid min-h-0 flex-1 grid-cols-[minmax(280px,390px)_minmax(0,1fr)] gap-4 max-[860px]:grid-cols-1 max-[860px]:grid-rows-[minmax(180px,40%)_minmax(0,1fr)] max-[520px]:gap-3">
           <MessageList
             emails={emails}
             loading={loading}

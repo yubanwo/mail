@@ -5,7 +5,7 @@ import { formatDate } from "../../shared/utils/formatDate.js";
 
 export function MessageList({ emails, loading, selectedEmail, onOpenEmail }) {
   return (
-    <Panel className="overflow-auto" aria-label="邮件列表">
+    <Panel className="h-full min-h-0 overflow-auto" aria-label="邮件列表">
       {emails.map((email) => (
         <button
           className={cn(

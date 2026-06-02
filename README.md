@@ -1,28 +1,51 @@
 # Mail Worker
 
-一个部署在 Cloudflare Workers 上的轻量邮件收件后台。它可以配合 Cloudflare Email Routing 接收发往你域名的邮件，把邮件存进 D1 数据库，并提供一个网页后台用来登录、筛选和查看邮件内容。
+把自己的域名变成一个轻量、私有、可部署到 Cloudflare Workers 的收件后台。
 
-适合用来搭建自己的临时邮箱、域名收件箱、验证码收件后台，或给个人项目保存入站邮件。
+Mail Worker 可以接收 Cloudflare Email Routing 转发来的邮件，自动解析标题、发件人、收件人和正文，保存到 D1 数据库，并提供一个网页后台用来登录、筛选和查看邮件。它适合临时邮箱、验证码收件箱、个人项目入站邮件归档，或者任何你想自己掌控的域名收件场景。
 
-## 功能
+## 亮点
 
-- 接收 Cloudflare Email Routing 转发过来的邮件
-- 自动解析邮件标题、发件人、收件人和正文
-- 支持纯文本邮件，也会把 HTML 邮件转换成可读文本
-- 使用 D1 保存邮件和管理员账号
-- 提供登录、退出、刷新 token 和修改账号信息
-- 支持按收件人筛选邮件
-- 前端和 API 一起部署到 Cloudflare Workers
+- 一次部署，前端页面和 API 都跑在 Cloudflare Workers 上
+- 使用 Cloudflare Email Routing 接收发往你域名的邮件
+- 使用 D1 保存邮件和管理员账号，不需要额外服务器
+- 支持解析纯文本邮件，也会把 HTML 邮件转换成可读文本
+- 支持登录、退出、刷新 token 和修改账号信息
+- 支持按收件人筛选邮件，适合一个域名下配置多个地址
+- 首个管理员注册后，默认关闭后续注册，更适合个人私有使用
 
-## 准备
+## 适合谁用
 
-你需要准备：
+如果你有一个已经接入 Cloudflare 的域名，想要一个简单、干净、自己可控的收件后台，它就很合适。
+
+常见用法：
+
+- 临时邮箱：例如 `test@example.com`、`demo@example.com`
+- 验证码收件：给测试环境、自动化流程或个人项目接验证码
+- 项目邮箱：把产品反馈、系统通知、Webhook 邮件集中保存
+- 域名收件箱：不用搭邮件服务器，也能查看发到域名地址的邮件
+
+## 工作方式
+
+```txt
+发件人
+  -> Cloudflare Email Routing
+  -> Mail Worker
+  -> D1 数据库
+  -> 网页后台查看邮件
+```
+
+你只需要准备一个 Cloudflare 域名、一份 D1 数据库和这个 Worker。邮件进入 Worker 后会被解析并保存，之后登录后台就能查看列表和详情。
+
+## 准备工作
+
+开始前需要：
 
 - 一个 Cloudflare 账号
-- 一个已接入 Cloudflare 的域名
+- 一个已经接入 Cloudflare 的域名
 - 一个 Cloudflare D1 数据库
 - Node.js 22 或更高版本
-- Wrangler CLI 登录到你的 Cloudflare 账号
+- 已登录 Cloudflare 的 Wrangler CLI
 
 安装依赖：
 
@@ -30,99 +53,155 @@
 npm install
 ```
 
-## 配置 D1
+## 快速开始
 
-在 Cloudflare 控制台创建一个 D1 数据库，例如 `mail`。
+1. 创建 D1 数据库
 
-然后把 `wrangler.toml` 里的 D1 配置改成你的数据库信息：
+   在 Cloudflare 控制台创建一个 D1 数据库，例如 `mail`。
 
-```toml
-[[d1_databases]]
-binding = "DB"
-database_name = "mail"
-database_id = "your-d1-database-id"
-```
+2. 配置 `wrangler.toml`
 
-`binding` 必须保持为 `DB`，应用会通过这个名字访问数据库。
+   把 D1 配置改成你的数据库信息：
 
-如果你准备把仓库公开到 GitHub，建议不要提交真实的 `database_id`，可以保留占位符，然后在部署环境或本地配置里填入真实值。
+   ```toml
+   [[d1_databases]]
+   binding = "DB"
+   database_name = "mail"
+   database_id = "your-d1-database-id"
+   ```
 
-## 初始化数据库
+   `binding` 必须保持为 `DB`，应用会通过这个名字访问数据库。
 
-本地开发数据库：
+3. 配置本地密钥
 
-```bash
-npm run db:migrate:local
-```
+   本地开发可以创建 `.dev.vars`：
 
-线上 D1 数据库：
+   ```txt
+   JWT_SECRET=local-development-secret-change-me
+   ALLOW_REGISTER=true
+   ```
 
-```bash
-npm run db:migrate:remote
-```
+   `.dev.vars` 已经在 `.gitignore` 中，不要上传到 GitHub。
 
-## 配置密钥
+4. 初始化本地数据库
 
-线上部署前设置 JWT 密钥：
+   ```bash
+   npm run db:migrate:local
+   ```
 
-```bash
-wrangler secret put JWT_SECRET
-```
+5. 启动本地服务
 
-本地开发可以创建 `.dev.vars`：
+   ```bash
+   npm run dev
+   ```
 
-```txt
-JWT_SECRET=local-development-secret-change-me
-ALLOW_REGISTER=true
-```
+   打开：
 
-`.dev.vars` 已经在 `.gitignore` 中，不要上传到 GitHub。
+   ```txt
+   http://127.0.0.1:5173/
+   ```
 
-## 本地运行
+   首次注册会创建管理员账号。默认情况下，如果系统里已经有用户，后续注册会被关闭。
 
-```bash
-npm run dev
-```
+## 部署到 Cloudflare
 
-打开：
+按照下面步骤把项目部署到 Cloudflare Workers。
 
-```txt
-http://127.0.0.1:5173/
-```
+1. 登录 Wrangler
 
-首次注册会创建管理员账号。默认情况下，如果系统里已经有用户，后续注册会被关闭。
+   ```bash
+   npx wrangler login
+   ```
 
-如果你确实要开放后续注册，可以设置：
+   登录完成后可以确认账号状态：
 
-```txt
-ALLOW_REGISTER=true
-```
+   ```bash
+   npx wrangler whoami
+   ```
 
-## 部署
+2. 检查 D1 配置
 
-```bash
-npm run deploy
-```
+   确认 `wrangler.toml` 中的数据库信息正确：
 
-部署完成后，在 Cloudflare Workers 控制台确认：
+   ```toml
+   [[d1_databases]]
+   binding = "DB"
+   database_name = "mail"
+   database_id = "your-d1-database-id"
+   ```
 
-- Worker 已绑定 D1，绑定名为 `DB`
-- `JWT_SECRET` 已设置
-- 你的 Worker 域名可以正常访问
+   如果准备把仓库公开到 GitHub，建议不要提交真实的 `database_id`，可以保留占位符，然后在部署环境或本地配置里填入真实值。
+
+3. 设置线上 JWT 密钥
+
+   ```bash
+   npx wrangler secret put JWT_SECRET
+   ```
+
+   按提示输入一段足够长的随机字符串。这个密钥用于签发登录 token，线上环境必须设置。
+
+4. 初始化线上 D1 数据库
+
+   ```bash
+   npm run db:migrate:remote
+   ```
+
+   如果数据库已经初始化过，一般不需要重复执行同一个迁移。
+
+5. 构建并部署 Worker
+
+   ```bash
+   npm run deploy
+   ```
+
+   这个命令会先构建前端资源，再把 Worker 部署到 Cloudflare。
+
+6. 检查部署结果
+
+   部署完成后，在 Cloudflare Workers 控制台确认：
+
+   - Worker 已绑定 D1，绑定名为 `DB`
+   - `JWT_SECRET` 已设置
+   - Worker 域名可以正常访问
+   - 打开 Worker 地址后能看到登录页面
 
 ## 配置收信
 
 在 Cloudflare 控制台进入你的域名，打开 Email Routing。
 
-创建一条路由规则，把目标地址转发到这个 Worker。之后发到该地址的邮件会进入后台。
-
-例如：
+新增一条路由规则，把目标邮箱地址转发到这个 Worker：
 
 ```txt
 anything@example.com -> mail-worker
 ```
 
-收到邮件后，登录后台即可查看邮件列表和详情。
+之后给这个地址发送邮件，登录后台刷新列表即可查看。
+
+如果你配置了多个地址，例如：
+
+```txt
+code@example.com -> mail-worker
+login@example.com -> mail-worker
+notice@example.com -> mail-worker
+```
+
+后台可以按收件人筛选，方便快速找到指定地址收到的邮件。
+
+## 首次使用流程
+
+第一次完整跑通可以按这个顺序来：
+
+1. 创建 D1 数据库
+2. 修改 `wrangler.toml`
+3. 设置 `JWT_SECRET`
+4. 执行 `npm run db:migrate:remote`
+5. 执行 `npm run deploy`
+6. 在 Email Routing 中把邮箱地址转发到 Worker
+7. 打开 Worker 地址，注册第一个管理员
+8. 给配置的邮箱发一封测试邮件
+9. 回到后台刷新邮件列表
+
+能看到测试邮件，就说明部署和收信都已经正常。
 
 ## 常用命令
 
@@ -134,6 +213,15 @@ npm run check
 npm run db:migrate:local
 npm run db:migrate:remote
 ```
+
+命令说明：
+
+- `npm run dev`：启动本地开发服务
+- `npm run build`：构建前端资源
+- `npm run deploy`：构建并部署到 Cloudflare Workers
+- `npm run check`：检查 Worker 入口脚本语法
+- `npm run db:migrate:local`：初始化本地 D1 数据库
+- `npm run db:migrate:remote`：初始化线上 D1 数据库
 
 ## 安全提醒
 

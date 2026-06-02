@@ -4,7 +4,7 @@ import { formatDate } from "../../shared/utils/formatDate.js";
 
 export function MessageDetail({ selectedEmail }) {
   return (
-    <Panel className="flex min-w-0 flex-col overflow-hidden" aria-label="邮件详情">
+    <Panel className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden" aria-label="邮件详情">
       {selectedEmail ? (
         <>
           <div className="border-b border-slate-100 p-5">
@@ -40,7 +40,7 @@ function EmailBody({ email }) {
   if (email.content_type === "text/html") {
     return (
       <iframe
-        className="min-h-[280px] flex-1 border-0 bg-white"
+        className="min-h-0 flex-1 border-0 bg-white"
         sandbox=""
         srcDoc={email.content}
         title="邮件正文"
@@ -49,7 +49,7 @@ function EmailBody({ email }) {
   }
 
   return (
-    <pre className="m-0 min-h-[280px] flex-1 overflow-auto whitespace-pre-wrap break-words bg-slate-50 p-5 text-[13px] text-slate-900">
+    <pre className="m-0 min-h-0 flex-1 overflow-auto whitespace-pre-wrap break-words bg-slate-50 p-5 text-[13px] text-slate-900">
       {email.content}
     </pre>
   );
