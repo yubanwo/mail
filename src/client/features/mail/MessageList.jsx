@@ -25,7 +25,7 @@ export function MessageList({ emails, loading, selectedEmail, onOpenEmail }) {
       ))}
 
       {!emails.length && !loading ? (
-        <div className="grid min-h-[220px] place-items-center gap-2.5 font-bold text-slate-500">
+        <div className="flex min-h-[220px] flex-col items-center justify-center gap-2.5 font-bold text-slate-500">
           <Inbox size={26} />
           <span>暂无邮件</span>
         </div>

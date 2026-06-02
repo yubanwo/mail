@@ -27,7 +27,7 @@ export function MessageDetail({ selectedEmail }) {
           <pre className="m-0 min-h-[280px] flex-1 overflow-auto whitespace-pre-wrap break-words bg-slate-50 p-5 text-[13px] text-slate-900">{selectedEmail.content}</pre>
         </>
       ) : (
-        <div className="grid flex-1 place-items-center gap-2.5 font-bold text-slate-500">
+        <div className="flex flex-1 flex-col items-center justify-center gap-2.5 font-bold text-slate-500">
           <Mail size={28} />
           <span>选择一封邮件</span>
         </div>
