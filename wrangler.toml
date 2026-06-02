@@ -1,0 +1,12 @@
+name = "mail-worker"
+main = "src/worker/index.js"
+compatibility_date = "2025-12-01"
+
+[assets]
+not_found_handling = "single-page-application"
+run_worker_first = ["/auth/*", "/emails", "/emails/*", "/me", "/health"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mail"
+database_id = "ebb3b875-9f74-4381-8246-2d8385aaa9be"

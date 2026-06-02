@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.wrangler/
+.mf/
+vite-dev.log
+vite-dev.err
+.dev.vars
+
+*.local
