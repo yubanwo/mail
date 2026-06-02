@@ -1,7 +1,7 @@
 import { MAX_EMAIL_BYTES } from "../../config.js";
 import { assertDb } from "../../db/database.js";
 import { createEmail } from "./emails.repository.js";
-import { decodeMimeHeader } from "./mime.js";
+import { decodeMimeHeader, parseEmail } from "./mime.js";
 
 export async function handleInboundEmail(message, env) {
   if (!env.DB) {
@@ -11,13 +11,14 @@ export async function handleInboundEmail(message, env) {
 
   try {
     const rawEmail = await readEmail(message.raw);
+    const parsedEmail = await parseEmail(rawEmail);
 
     assertDb(env);
     await createEmail(env.DB, {
-      from: message.from,
-      to: message.to,
-      subject: decodeMimeHeader(message.headers.get("subject") || ""),
-      content: rawEmail,
+      from: parsedEmail.from || decodeMimeHeader(message.headers.get("from")) || message.from,
+      to: parsedEmail.to || decodeMimeHeader(message.headers.get("to")) || message.to,
+      subject: parsedEmail.subject || decodeMimeHeader(message.headers.get("subject")),
+      content: parsedEmail.content || rawEmail,
     });
   } catch (error) {
     console.error("Failed to store inbound email", {
