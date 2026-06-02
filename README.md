@@ -1,51 +1,40 @@
 # Mail Worker
 
-Cloudflare Worker 全栈邮件后台：Worker 负责鉴权、D1 邮件接口和 Email Routing 入库，Vite + React 负责后台页面。
+一个部署在 Cloudflare Workers 上的轻量邮件收件后台。它可以配合 Cloudflare Email Routing 接收发往你域名的邮件，把邮件存进 D1 数据库，并提供一个网页后台用来登录、筛选和查看邮件内容。
 
-## 目录结构
+适合用来搭建自己的临时邮箱、域名收件箱、验证码收件后台，或给个人项目保存入站邮件。
 
-```txt
-src/client/main.jsx             React 入口
-src/client/app/                 前端应用编排
-src/client/layout/              前端布局组件
-src/client/features/            登录、账户和邮件功能视图
-src/client/shared/api/          前端 API client
-src/client/shared/hooks/        前端状态持久化 hooks
-src/client/shared/lib/          前端通用工具库
-src/client/shared/ui/           前端通用 UI 组件
-src/client/shared/utils/        前端格式化工具
-src/worker/index.js             Worker fetch/email 入口
-src/worker/app.js               HTTP 路由和统一错误处理
-src/worker/config.js            Worker 常量配置
-src/worker/db/                  D1 binding 检查
-src/worker/http/                HTTP 请求、响应、错误和轻量路由
-src/worker/modules/auth/        注册、登录、token、密码、鉴权、路由和 SQL
-src/worker/modules/emails/      邮件查询、MIME 解析、路由、SQL 和 Email Routing 入库
-src/worker/utils/               通用编码、加密、日期和规范化工具
-migrations/                     D1 SQL
-wrangler.toml                   Cloudflare 配置
-vite.config.js                  Vite + Tailwind + Cloudflare 插件配置
-```
+## 功能
 
-## 本地开发
+- 接收 Cloudflare Email Routing 转发过来的邮件
+- 自动解析邮件标题、发件人、收件人和正文
+- 支持纯文本邮件，也会把 HTML 邮件转换成可读文本
+- 使用 D1 保存邮件和管理员账号
+- 提供登录、退出、刷新 token 和修改账号信息
+- 支持按收件人筛选邮件
+- 前端和 API 一起部署到 Cloudflare Workers
 
-需要 Node.js 22 或更高版本。最新 Wrangler / Miniflare 已要求 Node 22。
+## 准备
+
+你需要准备：
+
+- 一个 Cloudflare 账号
+- 一个已接入 Cloudflare 的域名
+- 一个 Cloudflare D1 数据库
+- Node.js 22 或更高版本
+- Wrangler CLI 登录到你的 Cloudflare 账号
+
+安装依赖：
 
 ```bash
 npm install
-npm run db:migrate:local
-npm run dev
 ```
 
-本地地址：
+## 配置 D1
 
-```txt
-http://127.0.0.1:5173/
-```
+在 Cloudflare 控制台创建一个 D1 数据库，例如 `mail`。
 
-## 必要配置
-
-先在 `wrangler.toml` 里替换 D1 的 `database_id`：
+然后把 `wrangler.toml` 里的 D1 配置改成你的数据库信息：
 
 ```toml
 [[d1_databases]]
@@ -54,29 +43,59 @@ database_name = "mail"
 database_id = "your-d1-database-id"
 ```
 
-设置 JWT 密钥：
+`binding` 必须保持为 `DB`，应用会通过这个名字访问数据库。
+
+如果你准备把仓库公开到 GitHub，建议不要提交真实的 `database_id`，可以保留占位符，然后在部署环境或本地配置里填入真实值。
+
+## 初始化数据库
+
+本地开发数据库：
+
+```bash
+npm run db:migrate:local
+```
+
+线上 D1 数据库：
+
+```bash
+npm run db:migrate:remote
+```
+
+## 配置密钥
+
+线上部署前设置 JWT 密钥：
 
 ```bash
 wrangler secret put JWT_SECRET
 ```
 
-本地开发可以使用 `.dev.vars`：
+本地开发可以创建 `.dev.vars`：
 
 ```txt
 JWT_SECRET=local-development-secret-change-me
 ALLOW_REGISTER=true
 ```
 
-初始化或更新 D1 表：
+`.dev.vars` 已经在 `.gitignore` 中，不要上传到 GitHub。
+
+## 本地运行
 
 ```bash
-npm run db:migrate:local
+npm run dev
 ```
 
-部署前初始化或更新远程 D1 表：
+打开：
 
-```bash
-npm run db:migrate:remote
+```txt
+http://127.0.0.1:5173/
+```
+
+首次注册会创建管理员账号。默认情况下，如果系统里已经有用户，后续注册会被关闭。
+
+如果你确实要开放后续注册，可以设置：
+
+```txt
+ALLOW_REGISTER=true
 ```
 
 ## 部署
@@ -85,45 +104,51 @@ npm run db:migrate:remote
 npm run deploy
 ```
 
-## 路由
+部署完成后，在 Cloudflare Workers 控制台确认：
 
-- `/`：邮件后台前端
-- `/auth/register`：注册，默认只允许第一个用户
-- `/auth/login`：登录
-- `/auth/refresh`：刷新 token
-- `/auth/logout`：注销 refresh token
-- `/me`：当前用户
-- `PATCH /me`：修改当前管理员用户名或密码
-- `/emails`：邮件列表
-- `/emails/:id`：邮件详情
-- `/health`：健康检查
+- Worker 已绑定 D1，绑定名为 `DB`
+- `JWT_SECRET` 已设置
+- 你的 Worker 域名可以正常访问
 
-## API 响应格式
+## 配置收信
 
-成功响应：
+在 Cloudflare 控制台进入你的域名，打开 Email Routing。
 
-```json
-{
-  "ok": true,
-  "data": {}
-}
-```
+创建一条路由规则，把目标地址转发到这个 Worker。之后发到该地址的邮件会进入后台。
 
-错误响应：
-
-```json
-{
-  "ok": false,
-  "error": {
-    "message": "Invalid username or password."
-  }
-}
-```
-
-前端会自动解包 `data`，并兼容旧的非 envelope JSON。
-
-如果要开放后续注册，在 Worker 环境变量里设置：
+例如：
 
 ```txt
-ALLOW_REGISTER=true
+anything@example.com -> mail-worker
 ```
+
+收到邮件后，登录后台即可查看邮件列表和详情。
+
+## 常用命令
+
+```bash
+npm run dev
+npm run build
+npm run deploy
+npm run check
+npm run db:migrate:local
+npm run db:migrate:remote
+```
+
+## 安全提醒
+
+- 不要提交 `.dev.vars`
+- 不要提交真实 JWT 密钥
+- 公开仓库里建议不要放真实 D1 `database_id`
+- 部署后请使用足够强的管理员密码
+- 如果只是个人收件后台，不建议长期开放 `ALLOW_REGISTER`
+
+## 技术栈
+
+- Cloudflare Workers
+- Cloudflare D1
+- Cloudflare Email Routing
+- Vite
+- React
+- Hono
+- postal-mime
