@@ -24,7 +24,7 @@ export function MessageDetail({ selectedEmail }) {
               </div>
             </dl>
           </div>
-          <pre className="m-0 min-h-[280px] flex-1 overflow-auto whitespace-pre-wrap break-words bg-slate-50 p-5 text-[13px] text-slate-900">{selectedEmail.content}</pre>
+          <EmailBody email={selectedEmail} />
         </>
       ) : (
         <div className="flex flex-1 flex-col items-center justify-center gap-2.5 font-bold text-slate-500">
@@ -33,5 +33,24 @@ export function MessageDetail({ selectedEmail }) {
         </div>
       )}
     </Panel>
+  );
+}
+
+function EmailBody({ email }) {
+  if (email.content_type === "text/html") {
+    return (
+      <iframe
+        className="min-h-[280px] flex-1 border-0 bg-white"
+        sandbox=""
+        srcDoc={email.content}
+        title="邮件正文"
+      />
+    );
+  }
+
+  return (
+    <pre className="m-0 min-h-[280px] flex-1 overflow-auto whitespace-pre-wrap break-words bg-slate-50 p-5 text-[13px] text-slate-900">
+      {email.content}
+    </pre>
   );
 }

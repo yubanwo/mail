@@ -11,20 +11,33 @@ export async function parseEmail(raw) {
     from: formatAddress(parsed.from),
     to: formatAddressList(parsed.to),
     subject: parsed.subject || "",
-    content: extractReadableContent(parsed),
+    ...extractReadableContent(parsed),
   };
 }
 
+export function looksLikeRawEmail(value) {
+  return /(^|\n)(received|from|to|subject|content-type):/i.test(String(value || "").slice(0, 2000));
+}
+
 function extractReadableContent(parsed) {
-  if (parsed.text?.trim()) {
-    return parsed.text.trim();
-  }
-
   if (parsed.html?.trim()) {
-    return htmlToText(parsed.html).trim();
+    return {
+      content: sanitizeHtml(parsed.html).trim(),
+      contentType: "text/html",
+    };
   }
 
-  return "";
+  if (parsed.text?.trim()) {
+    return {
+      content: parsed.text.trim(),
+      contentType: "text/plain",
+    };
+  }
+
+  return {
+    content: "",
+    contentType: "text/plain",
+  };
 }
 
 function formatAddress(address) {
@@ -45,30 +58,12 @@ function formatAddressList(addresses) {
   return (addresses || []).map(formatAddress).filter(Boolean).join(", ");
 }
 
-function htmlToText(html) {
-  return decodeHtmlEntities(
-    String(html)
-      .replace(/<style[\s\S]*?<\/style>/gi, "")
-      .replace(/<script[\s\S]*?<\/script>/gi, "")
-      .replace(/<!--[\s\S]*?-->/g, "")
-      .replace(/<\/(p|div|tr|table|h[1-6]|li)>/gi, "\n")
-      .replace(/<br\s*\/?>/gi, "\n")
-      .replace(/<[^>]+>/g, " ")
-      .replace(/[ \t]+\n/g, "\n")
-      .replace(/\n[ \t]+/g, "\n")
-      .replace(/[ \t]{2,}/g, " ")
-      .replace(/\n{3,}/g, "\n\n")
-  );
-}
-
-function decodeHtmlEntities(value) {
-  return value
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/&lt;/gi, "<")
-    .replace(/&gt;/gi, ">")
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
-    .replace(/&#x([\da-f]+);/gi, (_, code) => String.fromCodePoint(Number.parseInt(code, 16)));
+function sanitizeHtml(html) {
+  return String(html)
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<iframe[\s\S]*?<\/iframe>/gi, "")
+    .replace(/<object[\s\S]*?<\/object>/gi, "")
+    .replace(/<embed[\s\S]*?<\/embed>/gi, "")
+    .replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+    .replace(/\s(href|src)\s*=\s*(['"])\s*javascript:[\s\S]*?\2/gi, "");
 }

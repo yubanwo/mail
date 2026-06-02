@@ -3,7 +3,7 @@ import { normalizeAddress } from "../../utils/normalize.js";
 export async function findEmails(db, { limit, offset, to }) {
   if (to) {
     const rows = await db.prepare(`
-      SELECT id, mail_from, mail_to, subject, created_at
+      SELECT id, mail_from, mail_to, subject, content, created_at
       FROM emails
       WHERE mail_to = ?
       ORDER BY created_at DESC, id DESC
@@ -16,7 +16,7 @@ export async function findEmails(db, { limit, offset, to }) {
   }
 
   const rows = await db.prepare(`
-    SELECT id, mail_from, mail_to, subject, created_at
+    SELECT id, mail_from, mail_to, subject, content, created_at
     FROM emails
     ORDER BY created_at DESC, id DESC
     LIMIT ? OFFSET ?
@@ -48,7 +48,7 @@ export async function createEmail(db, { from, to, subject, content }) {
     VALUES (?, ?, ?, ?)
   `)
     .bind(
-      normalizeAddress(from),
+      String(from || "").trim(),
       normalizeAddress(to),
       subject,
       content
