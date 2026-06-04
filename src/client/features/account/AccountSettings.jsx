@@ -16,9 +16,9 @@ export function AccountSettings({ open, user, saving, onClose, onSave }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/20 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/20 p-4 backdrop-blur-sm max-[520px]:items-end max-[520px]:p-3">
       <form
-        className="grid w-[min(440px,100%)] gap-4 rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_60px_rgba(15,23,42,0.18)]"
+        className="grid w-[min(440px,100%)] gap-4 rounded-lg border border-slate-200 bg-white p-6 shadow-[0_18px_60px_rgba(15,23,42,0.18)] max-[520px]:p-4"
         onSubmit={(event) => {
           event.preventDefault();
           onSave({ username, password });

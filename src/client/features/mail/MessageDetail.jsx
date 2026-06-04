@@ -1,14 +1,27 @@
-import { Mail } from "lucide-react";
+import { ArrowLeft, Mail } from "lucide-react";
+import { Button } from "../../shared/ui/Button.jsx";
+import { cn } from "../../shared/lib/cn.js";
 import { Panel } from "../../shared/ui/Panel.jsx";
 import { formatDate } from "../../shared/utils/formatDate.js";
 
-export function MessageDetail({ selectedEmail }) {
+export function MessageDetail({ className, selectedEmail, onBack }) {
   return (
-    <Panel className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden" aria-label="邮件详情">
+    <Panel className={cn("flex h-full min-h-0 min-w-0 flex-col overflow-hidden", className)} aria-label="邮件详情">
       {selectedEmail ? (
         <>
-          <div className="border-b border-slate-100 p-5">
-            <h2 className="mb-3.5 text-xl font-bold leading-tight text-slate-900 break-words">{selectedEmail.subject || "(无主题)"}</h2>
+          <div className="border-b border-slate-100 p-5 max-[520px]:p-4">
+            <div className="mb-3.5 flex items-start gap-3">
+              <Button
+                className="hidden h-9 w-9 max-[640px]:inline-flex"
+                variant="icon"
+                type="button"
+                onClick={onBack}
+                title="返回列表"
+              >
+                <ArrowLeft size={16} />
+              </Button>
+              <h2 className="m-0 min-w-0 flex-1 break-words text-xl font-bold leading-tight text-slate-900 max-[520px]:text-lg">{selectedEmail.subject || "(无主题)"}</h2>
+            </div>
             <dl className="m-0 grid gap-2 text-sm">
               <div className="grid grid-cols-[58px_minmax(0,1fr)] gap-2">
                 <dt className="text-slate-500">From</dt>

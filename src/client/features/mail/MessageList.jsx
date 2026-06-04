@@ -3,13 +3,13 @@ import { cn } from "../../shared/lib/cn.js";
 import { Panel } from "../../shared/ui/Panel.jsx";
 import { formatDate } from "../../shared/utils/formatDate.js";
 
-export function MessageList({ emails, loading, selectedEmail, onOpenEmail }) {
+export function MessageList({ className, emails, loading, selectedEmail, onOpenEmail }) {
   return (
-    <Panel className="h-full min-h-0 overflow-auto" aria-label="邮件列表">
+    <Panel className={cn("h-full min-h-0 overflow-auto", className)} aria-label="邮件列表">
       {emails.map((email) => (
         <button
           className={cn(
-            "grid min-h-[86px] w-full gap-1 border-0 border-b border-slate-100 bg-transparent p-4 text-left transition",
+            "grid min-h-[86px] w-full gap-1 border-0 border-b border-slate-100 bg-transparent p-4 text-left transition max-[520px]:min-h-[78px] max-[520px]:p-3.5",
             selectedEmail?.id === email.id
               ? "bg-slate-50 shadow-[inset_3px_0_0_#2563eb]"
               : "hover:bg-slate-50"

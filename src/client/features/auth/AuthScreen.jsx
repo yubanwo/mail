@@ -43,8 +43,8 @@ export function AuthScreen({ setTokens }) {
   }
 
   return (
-    <main className="grid min-h-screen place-items-center bg-[#f4f7f9] bg-[linear-gradient(to_right,rgba(226,232,240,0.45)_1px,transparent_1px),linear-gradient(to_bottom,rgba(226,232,240,0.38)_1px,transparent_1px)] bg-[size:32px_32px] p-5">
-      <form className="grid w-[min(420px,100%)] gap-4 rounded-lg border border-slate-200 bg-white p-8 shadow-[0_12px_44px_rgba(15,23,42,0.08)]" onSubmit={submit}>
+    <main className="grid min-h-dvh place-items-center bg-[#f4f7f9] bg-[linear-gradient(to_right,rgba(226,232,240,0.45)_1px,transparent_1px),linear-gradient(to_bottom,rgba(226,232,240,0.38)_1px,transparent_1px)] bg-[size:32px_32px] p-5 max-[520px]:p-3.5">
+      <form className="grid w-[min(420px,100%)] gap-4 rounded-lg border border-slate-200 bg-white p-8 shadow-[0_12px_44px_rgba(15,23,42,0.08)] max-[520px]:p-5" onSubmit={submit}>
         <div className="flex items-center gap-2.5 font-bold">
           <BrandMark size={20} />
           <div>
