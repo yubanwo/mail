@@ -1,4 +1,4 @@
-name = "mail-worker"
+name = "curly-wind-a1db"
 main = "src/worker/index.js"
 compatibility_date = "2025-12-01"
 
